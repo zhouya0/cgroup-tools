@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: stress-cpu
+spec:
+  containers:
+  - name: stress-cpu
+    imagePullPolicy: IfNotPresent
+    image: yaopolytech/stress
+    command: ["sh", "-c", "stress -c 1"]
+    resources:
+      limits:
+        cpu: "0.8"
+        memory: 256Mi
+      requests:
+        cpu: "0.5"
+        memory: 256Mi
