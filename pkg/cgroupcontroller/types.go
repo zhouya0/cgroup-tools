@@ -1,11 +1,11 @@
-package cgroup_controller
+package cgroupcontroller
 
 type ResourceConfig struct {
-	Memory *int
+	Memory *int64
 	CpuShares *uint64
 	CpuQuota *int64
 	CpuPeriod *uint64
-	HugepageLimit map[int64]int64
+	HugePageLimit map[int64]int64
 	PidsLimit *int64
 }
 

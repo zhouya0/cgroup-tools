@@ -5,7 +5,8 @@ go 1.14
 require (
 	github.com/gogo/protobuf v1.3.1
 	github.com/golang/protobuf v1.4.2 // indirect
-	github.com/sirupsen/logrus v1.4.2
+	github.com/opencontainers/runc v1.0.0-rc90.0.20200624011356-1b94395c0657
+	github.com/sirupsen/logrus v1.6.0
 	k8s.io/api v0.18.0
 	k8s.io/apimachinery v0.18.0
 	k8s.io/client-go v0.18.0
@@ -15,7 +16,7 @@ require (
 )
 
 replace (
-
+	github.com/opencontainers/runc => github.com/opencontainers/runc v1.0.0-rc90.0.20200624011356-1b94395c0657
 	k8s.io/api => k8s.io/api v0.18.0
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.18.0
 	k8s.io/apimachinery => k8s.io/apimachinery v0.18.0
