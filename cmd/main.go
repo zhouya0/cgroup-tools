@@ -1,4 +1,4 @@
-package cmd
+package main
 
 import (
 	"context"
@@ -11,7 +11,9 @@ import (
 func main() {
 	testString := "env in ( de, ds )"
 
-	kubeClient, _ := client.BuildInClusterClientset()
+	// kubeClient, _ := client.BuildInClusterClientset()
+	kubeClient,_ := client.BuildLocalClientSet()
 	pods,_ := kubeClient.CoreV1().Pods("default").List(context.TODO(), metav1.ListOptions{LabelSelector: testString})
+	fmt.Println("Listing pods:")
 	fmt.Println(pods)
 }
