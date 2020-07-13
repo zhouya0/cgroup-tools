@@ -4,7 +4,9 @@ package main
 
 import (
 	"fmt"
+	"github.com/zhouya0/cgroup-tools/pkg/client"
 	"github.com/zhouya0/cgroup-tools/pkg/cgroupcontroller"
+	"github.com/zhouya0/cgroup-tools/pkg/podsgetter"
 )
 
 func main() {
@@ -16,7 +18,7 @@ func main() {
 	//fmt.Println("Listing pods:")
 	//fmt.Println(pods)
 	rootCgroupfsName := cgroupcontroller.ParseSystemdToCgroupName(cgroupcontroller.CgroupRoot)
-	test := cgroupcontroller.NewCgroupName(cgroupcontroller.RootCgroupName, "kubepods", "burstable", "pod658827a8-0fb0-46b3-bde6-911c3e8d473c")
+	test := cgroupcontroller.NewCgroupName(cgroupcontroller.RootCgroupName, "kubepods", "burstable", "pod52bcad2fbd5e77e241df097f496d7b0c")
 	if test != nil {}
 	fmt.Println(rootCgroupfsName)
 	fmt.Println(test)
@@ -26,4 +28,16 @@ func main() {
 	if cgroupManager.Exists(test) {
 		fmt.Println("yes, it works!")
 	}
+
+	client,err := client.BuildLocalClientSet()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	pods,err := podsgetter.GetPodsByNamespaces(client, "default")
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
+	fmt.Println(pods)
 }
