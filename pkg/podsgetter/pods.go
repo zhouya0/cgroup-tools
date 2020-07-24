@@ -3,15 +3,49 @@ package podsgetter
 import (
 	"bufio"
 	"context"
+	"fmt"
 	"io"
 
 	"k8s.io/client-go/rest"
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/informers"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/tools/cache"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	clientset "k8s.io/client-go/kubernetes"
 )
 
-func GetPodsByNamespaces(cs clientset.Interface, namespace string) (*v1.PodList,error) {
+func GetNginxFromLister(cs clientset.Interface) {
+	stop := make(chan struct{})
+	defer close(stop)
+	sharedInformers := informers.NewSharedInformerFactory(cs, 0)
+	sharedInformers.Start(stop)
+	podInformer := sharedInformers.Core().V1().Pods()
+	go podInformer.Informer().Run(stop)
+	podLister := podInformer.Lister()
+	podListerSynced := podInformer.Informer().HasSynced
+
+	if !cache.WaitForCacheSync(stop, podListerSynced) {
+		return
+	}
+
+	nginx, err := podLister.Pods("default").Get("nginx")
+	if err != nil {
+		return
+	}
+	fmt.Println("Old labels\n", nginx.Labels)
+
+	labels := make(map[string]string)
+	labels["test"] = "nginxtest"
+	nginx.Labels = labels
+
+	newNginx, err := podLister.Pods("default").Get("nginx")
+	if err != nil {
+		return
+	}
+	fmt.Println("New labels\n", newNginx.Labels)
+}
+
+func GetPodsByNamespaces(cs clientset.Interface, namespace string) (*corev1.PodList,error) {
 	listOptions := metav1.ListOptions{}
 	pods,err := cs.CoreV1().Pods(namespace).List(context.TODO(), listOptions)
 	if err != nil {
@@ -31,8 +65,8 @@ func WritePodLogs(cs clientset.Interface, namespace string, podName string, cont
 }
 
 
-func NewLogsOptions(container string, follow bool) *v1.PodLogOptions {
-	return 	&v1.PodLogOptions{
+func NewLogsOptions(container string, follow bool) *corev1.PodLogOptions {
+	return 	&corev1.PodLogOptions{
 		Container:                    container,
 		Follow:                       follow,
 	}

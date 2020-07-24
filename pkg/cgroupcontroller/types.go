@@ -10,7 +10,6 @@ type ResourceConfig struct {
 	CpuShares *uint64
 	CpuQuota *int64
 	CpuPeriod *uint64
-	HugePageLimit map[int64]int64
 	PidsLimit *int64
 }
 

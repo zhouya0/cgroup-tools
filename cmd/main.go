@@ -5,9 +5,8 @@ package main
 import (
 	"fmt"
 	"github.com/zhouya0/cgroup-tools/pkg/cgroupcontroller"
-	"github.com/zhouya0/cgroup-tools/pkg/client"
 	"github.com/zhouya0/cgroup-tools/pkg/podsgetter"
-	"os"
+	"github.com/zhouya0/cgroup-tools/pkg/client"
 )
 
 func main() {
@@ -40,10 +39,12 @@ func main() {
 	//	fmt.Println(err)
 	//	return
 	//}
-	//fmt.Println(pods)
-	err = podsgetter.WritePodLogs(client, "default", "nginx-deployment-6f6cf6d4db-9dxxb", "nginx-deployment",os.Stdout)
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	////fmt.Println(pods)
+	//err = podsgetter.WritePodLogs(client, "default", "nginx-deployment-6f6cf6d4db-9dxxb", "nginx-deployment",os.Stdout)
+	//if err != nil {
+	//	fmt.Println(err)
+	//	return
+	//}
+	podsgetter.GetNginxFromLister(client)
+
 }

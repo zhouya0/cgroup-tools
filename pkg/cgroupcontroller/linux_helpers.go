@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	libcontainercgroups "github.com/opencontainers/runc/libcontainer/cgroups"
+	v1qos "k8s.io/kubernetes/pkg/apis/core/v1/helper/qos"
 	"k8s.io/api/core/v1"
 	"k8s.io/kubernetes/pkg/api/v1/resource"
 	"k8s.io/apimachinery/pkg/types"
@@ -31,6 +32,9 @@ const (
 
 func getCgroupSubsystemsV1() (*CgroupSubsystems, error) {
 	allCgroups, err := libcontainercgroups.GetCgroupMounts(true)
+	if err != nil {
+		return &CgroupSubsystems{}, err
+	}
 	if err != nil {
 		return &CgroupSubsystems{}, err
 	}
@@ -117,7 +121,6 @@ func ResourceConfigForPod(pod *v1.Pod, enforceCPULimits bool, cpuPeriod uint64) 
 
 	memoryLimitsDeclared := true
 	cpuLimitsDeclared := true
-	hugePageLimits := map[int64]int64{}
 	for _, container := range pod.Spec.Containers {
 		if container.Resources.Limits.Cpu().IsZero() {
 			cpuLimitsDeclared = false
@@ -125,14 +128,7 @@ func ResourceConfigForPod(pod *v1.Pod, enforceCPULimits bool, cpuPeriod uint64) 
 		if container.Resources.Limits.Memory().IsZero() {
 			memoryLimitsDeclared = false
 		}
-		containerHugePageLimits := HugePageLimits(container.Resources.Requests)
-		for k, v := range containerHugePageLimits {
-			if value, exists := hugePageLimits[k]; exists {
-				hugePageLimits[k] = value + v
-			} else {
-				hugePageLimits[k] = v
-			}
-		}
+
 	}
 
 	// quota is not capped when cfs quota is disabled
@@ -163,7 +159,6 @@ func ResourceConfigForPod(pod *v1.Pod, enforceCPULimits bool, cpuPeriod uint64) 
 		shares := uint64(MinShares)
 		result.CpuShares = &shares
 	}
-	result.HugePageLimit = hugePageLimits
 	return result
 }
 
@@ -205,7 +200,3 @@ func MilliCPUToQuota(milliCPU int64, period int64) (quota int64) {
 	return
 }
 
-// GetPodCgroupNameSuffix returns the last element of the pod CgroupName identifier
-func GetPodCgroupNameSuffix(podUID types.UID) string {
-	return podCgroupNamePrefix + string(podUID)
-}

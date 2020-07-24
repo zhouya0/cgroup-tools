@@ -14,13 +14,11 @@ import (
 	"sync"
 	"time"
 
-
-	v1helper "k8s.io/kubernetes/pkg/apis/core/v1/helper"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	libcontainercgroups "github.com/opencontainers/runc/libcontainer/cgroups"
 	cgroupfs "github.com/opencontainers/runc/libcontainer/cgroups/fs"
 	cgroupsystemd "github.com/opencontainers/runc/libcontainer/cgroups/systemd"
 	libcontainerconfigs "github.com/opencontainers/runc/libcontainer/configs"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 
 	"k8s.io/apimachinery/pkg/util/sets"
 )
@@ -391,31 +389,6 @@ func (m *cgroupManagerImpl) toResources(resourceConfig *ResourceConfig) *libcont
 	}
 	if resourceConfig.PidsLimit != nil {
 		resources.PidsLimit = *resourceConfig.PidsLimit
-	}
-	// if huge pages are enabled, we set them in libcontainer
-	// for each page size enumerated, set that value
-	pageSizes := sets.NewString()
-	for pageSize, limit := range resourceConfig.HugePageLimit {
-		sizeString, err := v1helper.HugePageUnitSizeFromByteSize(pageSize)
-		if err != nil {
-			klog.Warningf("pageSize is invalid: %v", err)
-			continue
-		}
-		resources.HugetlbLimit = append(resources.HugetlbLimit, &libcontainerconfigs.HugepageLimit{
-			Pagesize: sizeString,
-			Limit:    uint64(limit),
-		})
-		pageSizes.Insert(sizeString)
-	}
-	// for each page size omitted, limit to 0
-	for _, pageSize := range cgroupfs.HugePageSizes {
-		if pageSizes.Has(pageSize) {
-			continue
-		}
-		resources.HugetlbLimit = append(resources.HugetlbLimit, &libcontainerconfigs.HugepageLimit{
-			Pagesize: pageSize,
-			Limit:    uint64(0),
-		})
 	}
 	return resources
 }

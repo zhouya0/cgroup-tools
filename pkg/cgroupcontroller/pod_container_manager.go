@@ -7,14 +7,12 @@ import (
 	"io/ioutil"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
+	utilerrors "k8s.io/apimachinery/pkg/util/errors"
+	v1qos "k8s.io/kubernetes/pkg/apis/core/v1/helper/qos"
 	"k8s.io/klog"
 	"os"
 	"path"
 	"strings"
-)
-
-const (
-	podCgroupNamePrefix = "pod"
 )
 
 type podContainerManagerImpl struct {
@@ -57,9 +55,6 @@ func (m *podContainerManagerImpl) EnsureExists(pod *v1.Pod) error {
 		if err := m.cgroupManager.Create(containerConfig); err != nil {
 			return fmt.Errorf("failed to create container for %v : %v", podContainerName, err)
 		}
-	}
-	if err := m.applyLimits(pod); err != nil {
-		return fmt.Errorf("failed to apply resource limits on container for %v : %v", podContainerName, err)
 	}
 	return nil
 }
